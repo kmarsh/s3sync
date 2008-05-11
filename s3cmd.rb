@@ -15,7 +15,7 @@ module S3sync
 
 	require 's3try'
 	
-	$S3CMD_VERSION = '1.2.4'
+	$S3CMD_VERSION = '1.2.5'
    
 	require 'getoptlong'
 

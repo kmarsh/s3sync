@@ -145,6 +145,24 @@ local folders are conjured into existence whenever they are needed to make the
 "get" succeed.
 
 
+About MD5 hashes
+----------------
+s3sync's normal operation is to compare the file size and MD5 hash of each item
+to decide whether it needs syncing.  On the S3 side, these hashes are stored and
+returned to us as the "ETag" of each item when the bucket is listed, so it's
+very easy.  On the local side, the MD5 must be calculated by pushing every byte
+in the file through the MD5 algorithm.  This is CPU and IO intensive!  
+
+Thus you can specify the option --no-md5. This will compare the upload time on
+S3 to the "last modified" time on the local item, and not do md5 calculations
+locally at all. This might cause more transfers than are absolutely necessary.
+For example if the file is "touched" to a newer modified date, but its contents
+didn't change. Conversely if a file's contents are modified but the date is not
+updated, then the sync will pass over it.  Lastly, if your clock is very
+different from the one on the S3 servers, then you may see unanticipated
+behavior.
+
+
 A word on SSL_CERT_DIR:
 -----------------------
 On my debian install I didn't find any root authority public keys.  I installed
@@ -373,6 +391,11 @@ Search out s3config.yml in some likely places.
 Reset connection (properly) on retry-able non-50x errors.
 Fix calling format bug preventing it from working from yml.
 Added http proxy support.
+----------
+
+2008-05-11
+Version 1.2.5
+Added option --no-md5
 ----------
 
 FNORD

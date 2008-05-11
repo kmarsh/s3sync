@@ -101,7 +101,7 @@ module S3sync
 			rescue OpenSSL::SSL::SSLError => e
 				forceRetry = true
 				$stderr.puts "SSL Error: #{e}"
-			rescue NoMethodError
+			rescue NoMethodError => e
 				# we get this when using --progress, and the local item is something unreadable
 				$stderr.puts "Null stream error: #{e}"
 				break
@@ -136,8 +136,8 @@ module S3sync
 				debug("No result available")
 			end
 			$S3syncRetriesLeft -= 1
-			$stderr.puts "#{$S3syncRetriesLeft} retries left" unless hush
-			Kernel.sleep $S3SYNC_WAITONERROR unless now
+			$stderr.puts "#{$S3syncRetriesLeft} retries left, sleeping for #{$S3SYNC_WAITONERROR} seconds" unless hush
+			Kernel.sleep $S3SYNC_WAITONERROR.to_i unless now
 		end
       if $S3syncRetriesLeft <= 0
          $stderr.puts "Ran out of retries; operations did not complete!"
