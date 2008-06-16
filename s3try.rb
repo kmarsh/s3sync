@@ -66,7 +66,23 @@ module S3sync
       if(not $S3syncHttp or (bucket != $S3syncLastBucket))
          $stderr.puts "Creating new connection" if $S3syncOptions['--debug']
          $S3syncLastBucket = bucket
-         S3sync.S3tryConnect(bucket)
+         while $S3syncRetriesLeft > 0 do
+            begin
+               S3sync.S3tryConnect(bucket)
+               break
+            rescue Errno::ECONNRESET => e
+               $stderr.puts "Connection reset: #{e}" 
+            rescue Errno::ECONNABORTED => e
+               $stderr.puts "Connection aborted: #{e}" 
+            rescue Errno::ETIMEDOUT => e
+               $stderr.puts "Connection timed out: #{e}"
+            rescue Timeout::Error => e
+               $stderr.puts "Connection timed out: #{e}" 
+            end
+            $S3syncRetriesLeft -= 1
+            $stderr.puts "#{$S3syncRetriesLeft} retries left, sleeping for #{$S3SYNC_WAITONERROR} seconds"
+            Kernel.sleep $S3SYNC_WAITONERROR.to_i
+         end
       end
       
 		result = nil

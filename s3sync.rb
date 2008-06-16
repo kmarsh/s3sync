@@ -12,7 +12,7 @@ module S3sync
 
 	$S3SYNC_MIME_TYPES_FILE = (ENV["S3SYNC_MIME_TYPES_FILE"] or '/etc/mime.types')
 	
-	$S3SYNC_VERSION = '1.2.5'
+	$S3SYNC_VERSION = '1.2.6'
 
    # always look "here" for include files (thanks aktxyz)
    $LOAD_PATH << File.expand_path(File.dirname(__FILE__)) 

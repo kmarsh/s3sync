@@ -398,4 +398,9 @@ Version 1.2.5
 Added option --no-md5
 ----------
 
+2008-06-16
+Version 1.2.6
+Catch connect errors and retry.
+----------
+
 FNORD

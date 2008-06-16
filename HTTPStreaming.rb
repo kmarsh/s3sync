@@ -68,9 +68,13 @@ module S3sync
 			now = Time.new
 			if(now - @last > 1) # don't do this oftener than once per second
 				@printed = true
-				$stdout.printf("\rProgress: %db  %db/s  %s       ", @transferred, (@transferred/(now - @start)).floor, 
-					@total > 0? (100 * @transferred/@total).floor.to_s + "%" : ""  
-				)  
+            begin
+               $stdout.printf("\rProgress: %db  %db/s  %s       ", @transferred, (@transferred/(now - @start)).floor, 
+                  @total > 0? (100 * @transferred/@total).floor.to_s + "%" : ""  
+               )
+            rescue FloatDomainError
+               #wtf?
+            end
 				$stdout.flush
 				@last = now
 			end
