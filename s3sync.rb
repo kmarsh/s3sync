@@ -68,7 +68,8 @@ module S3sync
            [ '--cache-control',  GetoptLong::REQUIRED_ARGUMENT ],
            [ '--exclude',        GetoptLong::REQUIRED_ARGUMENT ],
 			  [ '--make-dirs',	GetoptLong::NO_ARGUMENT ],
-			  [ '--no-md5',	GetoptLong::NO_ARGUMENT ]           
+			  [ '--no-md5',	GetoptLong::NO_ARGUMENT ],
+			  [ '--dont-update-old', GetoptLong::NO_ARGUMENT ]
 			  )
 			  
 		def S3sync.usage(message = nil)
@@ -80,7 +81,7 @@ module S3sync
   --ssl     -s          --recursive   -r     --delete
   --public-read -p      --expires="<exp>"    --cache-control="<cc>"
   --exclude="<regexp>"  --progress           --debug   -d
-  --make-dirs           --no-md5
+  --make-dirs           --no-md5             --dont-update-old
 One of <source> or <destination> must be of S3 format, the other a local path.
 Reminders:
 * An S3 formatted item with bucket 'mybucket' and prefix 'mypre' looks like:
@@ -388,12 +389,21 @@ ENDUSAGE
 				end
 				destinationNode = destinationTree.next? ? destinationTree.next : nil
 			elsif sourceNode.name == destinationNode.name
-				if (sourceNode.size != destinationNode.size) or (($S3syncOptions['--no-md5'])? (sourceNode.date > destinationNode.date) : (sourceNode.tag != destinationNode.tag))
-					puts "Update node #{sourceNode.name}" if $S3syncOptions['--verbose']
-					destinationNode.updateFrom(sourceNode) unless $S3syncOptions['--dryrun']
-				elsif $S3syncOptions['--debug']
-					$stderr.puts "Node #{sourceNode.name} unchanged" 
-				end
+			  if $S3syncOptions['--dont-update-old']
+			    if sourceNode.date > destinationNode.date
+  					puts "Update node #{sourceNode.name} because the source is newer than the destinate" if $S3syncOptions['--verbose']
+  					destinationNode.updateFrom(sourceNode) unless $S3syncOptions['--dryrun']			      
+			    else
+			      $stderr.puts "Node #{sourceNode.name} source is older than destination, doing nothing" 
+  				end
+        else
+  				if (sourceNode.size != destinationNode.size) or (($S3syncOptions['--no-md5'])? (sourceNode.date > destinationNode.date) : (sourceNode.tag != destinationNode.tag))
+  					puts "Update node #{sourceNode.name}" if $S3syncOptions['--verbose']
+  					destinationNode.updateFrom(sourceNode) unless $S3syncOptions['--dryrun']
+  				elsif $S3syncOptions['--debug']
+  					$stderr.puts "Node #{sourceNode.name} unchanged" 
+  				end
+			  end
 				sourceNode = sourceTree.next? ? sourceTree.next : nil
 				destinationNode = destinationTree.next? ? destinationTree.next : nil
 			end					
